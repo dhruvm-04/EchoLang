@@ -127,7 +127,7 @@ This structure allows EchoLang to be robust with handling informal phrasing and 
 |----------|----------------------|----------------------------|----------------------------------|
 | English  | 0.2488               | 0.0641                     | High transcription accuracy      |
 | Hindi    | 0.4705               | 0.2237                     | Moderate, code-mixing challenges |
-| Tamil    | 0.6478               | 0.2399                     | Most errors, semantic info kept  |
+| Tamil    | 0.6478               | 0.2399                     | Errors, semantic info kept       |
 
 - Lower-resource languages (Hindi, Tamil) exhibited **higher error rates** due to code-mixing and phonetic differences, but overall, the system retained substantial **semantic accuracy**.
 
