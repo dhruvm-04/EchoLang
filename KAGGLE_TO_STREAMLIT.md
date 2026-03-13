@@ -2,7 +2,22 @@
 
 ## 1. Build model bundle in Kaggle
 
-Run these commands in a Kaggle notebook cell from your project root:
+If you uploaded the project as a Kaggle Dataset, first inspect the mounted input path:
+
+```bash
+!find /kaggle/input -maxdepth 2 -type d
+```
+
+Then copy the project into the writable working directory using the real dataset path, for example:
+
+```bash
+!cp -r /kaggle/input/echolang/EchoLang /kaggle/working/EchoLang
+%cd /kaggle/working/EchoLang
+```
+
+If your dataset path is different, replace `/kaggle/input/echolang/EchoLang` with the path shown by `find`.
+
+From the project root, run:
 
 ```bash
 pip install -r requirements.txt
