@@ -1,5 +1,29 @@
 # How to Run EchoLang
 
+## Recommended Workflow (Kaggle -> Streamlit)
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Build deployment artifact in Kaggle:
+```bash
+python kaggle_build_artifact.py --output /kaggle/working/echolang_bundle.pkl
+```
+
+3. Download `echolang_bundle.pkl` from Kaggle outputs.
+
+4. Run Streamlit app with that artifact:
+```bash
+streamlit run streamlit_app.py
+```
+
+5. Optional CLI check:
+```bash
+python -m src.echolang.cli --model echolang_bundle.pkl --text "Need urgent plumber help"
+```
+
 ## 1. Prerequisites
 
 - Python 3.9 or higher (tested with Python 3.11)
