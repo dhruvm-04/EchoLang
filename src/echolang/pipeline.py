@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import pickle
+from pathlib import Path
 import re
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
+from joblib import Memory
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
@@ -151,7 +153,11 @@ class EchoLangPipeline:
         self.bundle = bundle
 
     @classmethod
-    def train_default(cls, random_state: int = 42) -> Tuple["EchoLangPipeline", Dict[str, str]]:
+    def train_default(
+        cls,
+        random_state: int = 42,
+        memory: Optional[Union[str, Path, Memory]] = None,
+    ) -> Tuple["EchoLangPipeline", Dict[str, str]]:
         texts, labels = build_default_dataset()
         x_train, x_test, y_train, y_test = train_test_split(
             texts,
@@ -160,6 +166,18 @@ class EchoLangPipeline:
             random_state=random_state,
             stratify=labels,
         )
+
+        pipeline_memory: Optional[Memory]
+        if isinstance(memory, Memory):
+            pipeline_memory = memory
+        elif memory is None:
+            cache_dir = Path(".cache") / "sklearn"
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            pipeline_memory = Memory(location=str(cache_dir), verbose=0)
+        else:
+            cache_dir = Path(memory)
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            pipeline_memory = Memory(location=str(cache_dir), verbose=0)
 
         model_pipeline = Pipeline(
             steps=[
@@ -175,7 +193,8 @@ class EchoLangPipeline:
                     "clf",
                     LogisticRegression(max_iter=300, random_state=random_state),
                 ),
-            ]
+            ],
+            memory=pipeline_memory,
         )
         model_pipeline.fit(x_train, y_train)
 
