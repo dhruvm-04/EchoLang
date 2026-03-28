@@ -17,20 +17,6 @@ EchoLang is an intelligent multilingual service request analysis system designed
 ## Prerequisites
 - torch>=2.0.0 transformers>=4.30.0 openai-whisper>=20231117
 - sentence-transformers>=2.2.0 langdetect>=1.0.9 jiwer>=3.0.0
-- soundfile>=0.12.0 librosa>=0.10.0 accelerate>=0.20.0
-
-## Project Structure
-  EchoLang/  
-  ├── docs/ # Documentation  
-  ├── src/ # Source code  
-  │ ├── models/ # Model management  
-  │ ├── processing/ # Audio/text processing  
-  │ ├── translation/ # Translation components  
-  │ ├── classification/ # Intent classification  
-  │ └── ui/ # User interface  
-  ├── tests/ # Unit tests  
-  ├── examples/ # Usage examples  
-  └── notebooks/ # Jupyter notebooks  
 
 ## Core Features
 
