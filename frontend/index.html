@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoLang — Multilingual Request Triage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<style>
+  main{display:flex;flex-direction:column;}
+
+  /* -- Input panel -- */
+  .mode-tabs{display:flex;border:1px solid var(--ink);margin-bottom:1rem;}
+  .mode-tab{
+    flex:1;text-align:center;padding:.55rem .5rem;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--gray);transition:background .15s,color .15s;
+  }
+  .mode-tab + .mode-tab{border-left:1px solid var(--ink);}
+  .mode-tab.active{background:var(--ink);color:var(--paper);}
+  .mode-pane{display:none;flex:1;flex-direction:column;min-height:0;}
+  .mode-pane.active{display:flex;}
+
+  #text-input{flex:1;min-height:110px;resize:vertical;font-size:.92rem;}
+
+  .drop-zone{
+    flex:1;border:1px dashed var(--line-strong);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:.6rem;text-align:center;padding:1.5rem 1rem;
+    cursor:pointer;transition:border-color .15s,background .15s;
+  }
+  .drop-zone:hover, .drop-zone.dragover{border-color:var(--red);background:color-mix(in srgb, var(--red) 6%, transparent);}
+  .drop-zone .dz-label{font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);}
+  .drop-zone .dz-file{font-size:.85rem;font-weight:600;word-break:break-all;padding:0 .5rem;}
+  .rec-row{display:flex;gap:.6rem;align-items:center;margin-top:.85rem;}
+  .rec-dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:0 0 auto;opacity:.35;}
+  .rec-dot.live{opacity:1;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .rec-time{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--gray);}
+
+  .example-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.85rem;}
+  .example-chip{
+    font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.03em;
+    border:1px solid var(--line);padding:.3rem .6rem;cursor:pointer;color:var(--gray);
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .example-chip:hover{border-color:var(--ink);background:var(--ink);color:var(--paper);}
+
+  .actions-row{display:flex;gap:.6rem;margin-top:1.1rem;}
+  .actions-row .btn{flex:1;}
+
+  /* -- Result panel -- */
+  .empty-state{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:var(--gray);font-family:'JetBrains Mono',monospace;font-size:.68rem;
+    letter-spacing:.06em;text-transform:uppercase;text-align:center;gap:.5rem;
+  }
+  .result-body{display:none;flex-direction:column;gap:1rem;flex:1;min-height:0;overflow-y:auto;padding-right:.2rem;}
+  .result-body.active{display:flex;}
+  .result-body::-webkit-scrollbar{width:5px;}
+  .result-body::-webkit-scrollbar-thumb{background:var(--line-strong);}
+
+  .badge-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}
+  .conf-wrap{display:flex;align-items:center;gap:.6rem;}
+  .conf-bar{flex:1;height:6px;background:var(--line);position:relative;overflow:hidden;min-width:90px;}
+  .conf-fill{height:100%;background:var(--red);width:0%;transition:width .3s ease;}
+  .conf-num{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--gray);white-space:nowrap;}
+
+  .urgency-high{border-color:var(--red)!important;color:var(--red)!important;}
+  .urgency-medium{border-color:var(--ink)!important;color:var(--ink)!important;}
+  .urgency-low{border-color:var(--gray)!important;color:var(--gray)!important;}
+
+  .translate-block{border:1px solid var(--ink);padding:1.1rem 1.25rem;}
+  .translate-block .b-label{margin-bottom:.6rem;}
+  .translate-block .orig{font-size:.8rem;color:var(--gray);margin-bottom:.5rem;font-style:italic;}
+  .translate-block .eng{font-size:1rem;font-weight:600;}
+
+  .loading-state{
+    flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;
+    font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;
+  }
+  .loading-state.active{display:flex;}
+  .spinner{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* -- Log panel -- */
+  .log-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--gray);font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;text-align:center;padding:1rem;}
+  .log-item{padding:.8rem 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .log-item:hover{background:color-mix(in srgb, var(--ink) 4%, transparent);}
+  .log-item:first-child{padding-top:0;}
+  .log-item .li-top{display:flex;justify-content:space-between;gap:.5rem;align-items:baseline;margin-bottom:.25rem;}
+  .log-item .li-cat{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--red);}
+  .log-item .li-time{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--gray);white-space:nowrap;}
+  .log-item .li-text{font-size:.82rem;color:var(--ink);opacity:.85;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+
+  .api-field{display:flex;align-items:center;gap:.5rem;}
+  .api-field input{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.4rem .6rem;}
+  .api-status{width:7px;height:7rem;} /* placeholder overridden below */
+  .api-status{width:7px;height:7px;border-radius:50%;background:var(--gray);flex:0 0 auto;}
+  .api-status.ok{background:var(--ink);}
+  .api-status.bad{background:var(--red);}
+
+  @media(max-width:900px){
+    .fn-bento.cols-3{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#" class="nav-logo">ECHOLANG<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a class="nav-link active" href="#"><span class="num">00</span>Triage</a></li>
+    <li><a class="nav-link" href="https://github.com/dhruvm-04/EchoLang" target="_blank" rel="noopener"><span class="num">01</span>Source</a></li>
+    <li><button id="theme-toggle" class="nav-link theme-toggle">DARK</button></li>
+  </ul>
+</nav>
+
+<main>
+<section class="hero-screen">
+  <div class="hero-grid">
+
+    <div class="hero-top">
+      <div>
+        <h1 class="hero-name">Multilingual<br><span class="red">Request</span> Triage</h1>
+        <p class="hero-tagline">Hindi<span class="sep">/</span>Tamil<span class="sep">/</span>English, code-switched <span class="r">·</span> speech or text in, category + urgency out</p>
+      </div>
+      <div class="info-strip" id="info-strip">
+        <div class="info-cell"><div class="info-key">Backend</div><div class="info-val"><span class="api-status" id="api-dot"></span><span id="api-status-text">Checking</span></div></div>
+        <div class="info-cell"><div class="info-key">STT Model</div><div class="info-val" id="stt-model">—</div></div>
+        <div class="info-cell"><div class="info-key">LLM Model</div><div class="info-val" id="llm-model">—</div></div>
+        <div class="info-cell"><div class="info-key">Categories</div><div class="info-val">6</div></div>
+      </div>
+    </div>
+
+    <div class="fn-bento cols-3">
+
+      <!-- PANEL 1: INPUT -->
+      <div class="fn-panel"
+        <div class="section-label small">
+          <span class="num">01</span><span class="sep">/</span><span class="name">Input</span>
+          <span class="line"></span><span class="meta" id="mode-meta">text</span>
+        </div>
+
+        <div class="mode-tabs">
+          <div class="mode-tab active" data-mode="text">Type</div>
+          <div class="mode-tab" data-mode="record">Record</div>
+          <div class="mode-tab" data-mode="upload">Upload</div>
+        </div>
+
+        <div class="mode-pane active" data-pane="text">
+          <textarea id="text-input" placeholder="Type or paste an utterance — Hindi, Tamil, English, or mixed. e.g. Ghar mein aag lag gayi hai, jaldi help bhejo!"></textarea>
+          <div class="example-row">
+            <span class="example-chip" data-ex="Doctor chahiye, mere bête ko bahut tez bukhar hai abhi turant">Fever, Hindi</span>
+            <span class="example-chip" data-ex="Enakku veetla tap leak aagudhu, plumber venum next week">Leak, Tamil</span>
+            <span class="example-chip" data-ex="I need someone to clean my apartment before guests come tomorrow">Cleaning, English</span>
+          </div>
+        </div>
+
+        <div class="mode-pane" data-pane="record">
+          <div class="drop-zone" id="rec-zone">
+            <div class="dz-label">// tap to record</div>
+            <div class="dz-file" id="rec-filename">No recording yet</div>
+          </div>
+          <div class="rec-row">
+            <div class="rec-dot" id="rec-dot"></div>
+            <div class="rec-time" id="rec-time">00:00</div>
+            <button class="btn btn-sm" id="rec-btn" style="margin-left:auto;">Start</button>
+          </div>
+        </div>
+
+        <div class="mode-pane" data-pane="upload">
+          <div class="drop-zone" id="upload-zone">
+            <div class="dz-label">// drop .wav / .mp3 / .m4a, or click</div>
+            <div class="dz-file" id="upload-filename">No file selected</div>
+          </div>
+          <input type="file" id="file-input" accept="audio/*" style="display:none;">
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" id="analyze-btn">Analyze</button>
+          <button class="btn" id="clear-btn">Clear</button>
+        </div>
+      </div>
+
+      <!-- PANEL 2: RESULT -->
+      <div class="fn-panel">
+        <div class="section-label small">
+          <span class="num">02</span><span class="sep">/</span><span class="name">Result</span>
+          <span class="line"></span><span class="meta" id="result-meta">idle</span>
+        </div>
+
+        <div class="loading-state" id="loading-state">
+          <div class="spinner"></div>
+          <div id="loading-text">Contacting backend</div>
+        </div>
+
+        <div class="empty-state" id="empty-state">
+          <div>// no request analyzed yet</div>
+          <div>Type, record, or upload — then hit Analyze</div>
+        </div>
+
+        <div class="result-body" id="result-body">
+          <div class="translate-block">
+            <div class="b-label" id="lang-label">detected language</div>
+            <div class="orig" id="orig-text"></div>
+            <div class="eng" id="translated-text"></div>
+          </div>
+
+          <div class="badge-row">
+            <span class="badge" id="category-badge">—</span>
+            <span class="badge" id="urgency-badge">—</span>
+          </div>
+
+          <div>
+            <div class="info-key" style="margin-bottom:.4rem;">Confidence</div>
+            <div class="conf-wrap">
+              <div class="conf-bar"><div class="conf-fill" id="conf-fill"></div></div>
+              <span class="conf-num" id="conf-num">0%</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="b-label">urgency signal</div>
+            <p class="b-body" id="urgency-reason">—</p>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="b-label">model reasoning</div>
+            <p class="b-body" id="reasoning-text">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 3: LOG + CONFIG -->
+      <div class="fn-panel">
+        <div class="section-label small">
+          <span class="num">03</span><span class="sep">/</span><span class="name">Session Log</span>
+          <span class="line"></span><span class="meta" id="log-count">0 requests</span>
+        </div>
+
+        <ul class="scroll-list" id="log-list">
+          <div class="log-empty">// requests you analyze this session<br>will appear here</div>
+        </ul>
+
+        <div class="skills-note" style="margin-top:.85rem;border-top:1px solid var(--line);">
+          <div class="api-field">
+            <span>API</span>
+            <input type="text" id="api-base" value="http://127.0.0.1:8000">
+            <button class="btn btn-sm" id="api-save">Set</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>ECHOLANG <span class="sep">/</span> STT + translation + intent + urgency, via Groq</span>
+    <span class="footer-links"><a href="https://github.com/dhruvm-04/EchoLang" target="_blank" rel="noopener">Source ↗</a></span>
+  </div>
+</footer>
+
+<script src="theme-toggle.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
