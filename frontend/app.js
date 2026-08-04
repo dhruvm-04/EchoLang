@@ -61,13 +61,6 @@
     });
   });
 
-  // ---------- example chips ----------
-  $$(".example-chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      $("#text-input").value = chip.dataset.ex;
-    });
-  });
-
   // ---------- upload ----------
   const uploadZone = $("#upload-zone");
   const fileInput = $("#file-input");
