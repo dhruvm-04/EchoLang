@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EchoLang — Multilingual Request Triage</title>
+<title>EchoLang</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="styles.css">
@@ -94,11 +94,28 @@
   .log-item .li-text{font-size:.82rem;color:var(--ink);opacity:.85;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 
   .api-field{display:flex;align-items:center;gap:.5rem;}
-  .api-field input{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.4rem .6rem;}
+  .api-field input{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.4rem .6rem;min-height:2.2rem;}
+  .api-field .btn{min-height:2.2rem;padding:0 .7rem;}
   .api-status{width:7px;height:7rem;} /* placeholder overridden below */
   .api-status{width:7px;height:7px;border-radius:50%;background:var(--gray);flex:0 0 auto;}
   .api-status.ok{background:var(--ink);}
   .api-status.bad{background:var(--red);}
+
+  .theme-toggle{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:2.35rem;height:2.35rem;padding:0;margin:0;
+    box-sizing:border-box;flex:0 0 auto;
+    border:1px solid var(--ink) !important;
+    border-radius:0;
+    background:var(--paper);color:var(--ink);
+    line-height:0;overflow:visible;
+  }
+  .theme-toggle:hover{background:var(--ink);color:var(--paper);}
+  .theme-toggle .theme-icon{width:1rem;height:1rem;display:block;transform:translateY(-.5px);}
+  .site-footer{background:#0A0A0A !important;border-top:1px solid #0A0A0A !important;}
+  .site-footer .footer-inner{color:#EDEAE3;}
+  .site-footer .footer-links a{color:#EDEAE3;}
+  .site-footer .footer-links a:hover{color:var(--red);}
 
   @media(max-width:900px){
     .fn-bento.cols-3{grid-template-columns:1fr;}
@@ -108,11 +125,9 @@
 <body>
 
 <nav class="nav">
-  <a href="#" class="nav-logo">ECHOLANG<span class="dot">.</span></a>
+  <a href="https://dhruvmaheshwari.vercel.app/" target="_blank" rel="noopener" class="nav-logo">DM<span class="dot">.</span></a>
   <ul class="nav-links">
-    <li><a class="nav-link active" href="#"><span class="num">00</span>Triage</a></li>
-    <li><a class="nav-link" href="https://github.com/dhruvm-04/EchoLang" target="_blank" rel="noopener"><span class="num">01</span>Source</a></li>
-    <li><button id="theme-toggle" class="nav-link theme-toggle">DARK</button></li>
+    <li><button id="theme-toggle" class="nav-link theme-toggle" type="button" aria-label="Switch theme"><span class="theme-icon" aria-hidden="true">☾</span></button></li>
   </ul>
 </nav>
 
@@ -122,8 +137,7 @@
 
     <div class="hero-top">
       <div>
-        <h1 class="hero-name">Multilingual<br><span class="red">Request</span> Triage</h1>
-        <p class="hero-tagline">Hindi<span class="sep">/</span>Tamil<span class="sep">/</span>English, code-switched <span class="r">·</span> speech or text in, category + urgency out</p>
+        <h1 class="hero-name">Echo<span class="red">Lang</span></h1>
       </div>
       <div class="info-strip" id="info-strip">
         <div class="info-cell"><div class="info-key">Backend</div><div class="info-val"><span class="api-status" id="api-dot"></span><span id="api-status-text">Checking</span></div></div>
@@ -136,7 +150,7 @@
     <div class="fn-bento cols-3">
 
       <!-- PANEL 1: INPUT -->
-      <div class="fn-panel"
+      <div class="fn-panel">
         <div class="section-label small">
           <span class="num">01</span><span class="sep">/</span><span class="name">Input</span>
           <span class="line"></span><span class="meta" id="mode-meta">text</span>
@@ -149,12 +163,7 @@
         </div>
 
         <div class="mode-pane active" data-pane="text">
-          <textarea id="text-input" placeholder="Type or paste an utterance — Hindi, Tamil, English, or mixed. e.g. Ghar mein aag lag gayi hai, jaldi help bhejo!"></textarea>
-          <div class="example-row">
-            <span class="example-chip" data-ex="Doctor chahiye, mere bête ko bahut tez bukhar hai abhi turant">Fever, Hindi</span>
-            <span class="example-chip" data-ex="Enakku veetla tap leak aagudhu, plumber venum next week">Leak, Tamil</span>
-            <span class="example-chip" data-ex="I need someone to clean my apartment before guests come tomorrow">Cleaning, English</span>
-          </div>
+          <textarea id="text-input" placeholder="Type / Paste your message here..."></textarea>
         </div>
 
         <div class="mode-pane" data-pane="record">
@@ -197,7 +206,6 @@
 
         <div class="empty-state" id="empty-state">
           <div>// no request analyzed yet</div>
-          <div>Type, record, or upload — then hit Analyze</div>
         </div>
 
         <div class="result-body" id="result-body">
@@ -238,9 +246,8 @@
           <span class="num">03</span><span class="sep">/</span><span class="name">Session Log</span>
           <span class="line"></span><span class="meta" id="log-count">0 requests</span>
         </div>
-
         <ul class="scroll-list" id="log-list">
-          <div class="log-empty">// requests you analyze this session<br>will appear here</div>
+          <div class="log-empty">// requests you analyze this session will appear here</div>
         </ul>
 
         <div class="skills-note" style="margin-top:.85rem;border-top:1px solid var(--line);">

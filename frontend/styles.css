@@ -276,7 +276,7 @@ ul.errorlist{list-style:none;color:var(--red);font-family:'JetBrains Mono',monos
 .btn-secondary{color:var(--gray);}
 .btn-outline-secondary{color:var(--gray);font-size:.62rem;padding:.4rem .9rem;}
 .btn-outline-danger{color:var(--red);border-color:var(--red);font-size:.62rem;padding:.4rem .9rem;}
-.btn-sm{padding:.4rem .9rem;font-size:.6rem;}
+.btn-sm{padding:.4rem .4rem;font-size:.6rem;}
 .btn-link{border:none;background:none;text-decoration:underline;}
 .cta-btn.ghost{background:none;border:1px solid var(--line-strong);}
 .cta-btn.accent{background:none;color:var(--red);border:1px solid var(--red);}
