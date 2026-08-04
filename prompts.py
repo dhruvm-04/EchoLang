@@ -12,14 +12,11 @@ Design choices (documented so the reasoning is visible, not just the result):
 3. Closed-set constraint: intent_category MUST be one of SERVICE_CATEGORIES. Giving the
    model the exact allowed list inline (rather than relying on it "knowing" categories)
    avoids drift/hallucinated categories.
-4. Few-shot examples: 4 short input->output pairs covering Hindi-only, Tamil-only,
-   code-switched Hindi+English, and an urgent case. Few-shot grounds tone, JSON shape,
-   and calibrates what "high confidence" vs "low confidence" should look like.
-5. Lightweight chain-of-thought, externalized: instead of asking for free-form
+4. Lightweight chain-of-thought, externalized: instead of asking for free-form
    reasoning that inflates tokens, we ask for a one-sentence "reasoning" field. This
    keeps latency low (important on a free-tier rate limit) while still giving us an
    audit trail of why a category/urgency was picked.
-6. Negative instruction: explicitly forbid inventing categories or adding prose outside
+5. Negative instruction: explicitly forbid inventing categories or adding prose outside
    the JSON object, since small/fast models are more prone to leaking commentary.
 """
 
@@ -59,66 +56,6 @@ Urgency rules:
 - "low": no time pressure indicated
 
 Respond with ONLY the JSON object. Do not wrap it in code fences."""
-
-FEW_SHOT_EXAMPLES = [
-    {
-        "role": "user",
-        "content": "Doctor chahiye, mere bête ko bahut tez bukhar hai abhi turant",
-    },
-    {
-        "role": "assistant",
-        "content": (
-            '{"detected_language": "Hindi", '
-            '"translated_text": "I need a doctor, my son has a very high fever right now.", '
-            '"intent_category": "Healthcare", "confidence": 0.97, "urgency": "high", '
-            '"urgency_reason": "\'abhi turant\' + child with high fever", '
-            '"reasoning": "Explicit doctor request for acute fever"}'
-        ),
-    },
-    {
-        "role": "user",
-        "content": "Enakku veetla tap leak aagudhu, plumber venum next week",
-    },
-    {
-        "role": "assistant",
-        "content": (
-            '{"detected_language": "Tamil", '
-            '"translated_text": "My tap at home is leaking, I need a plumber next week.", '
-            '"intent_category": "Home Maintenance", "confidence": 0.93, "urgency": "low", '
-            '"urgency_reason": "explicitly scheduled for next week", '
-            '"reasoning": "Leaking tap is a plumbing/maintenance issue"}'
-        ),
-    },
-    {
-        "role": "user",
-        "content": "I need someone to clean my apartment before guests come tomorrow",
-    },
-    {
-        "role": "assistant",
-        "content": (
-            '{"detected_language": "English", '
-            '"translated_text": "I need someone to clean my apartment before guests come tomorrow.", '
-            '"intent_category": "Cleaning", "confidence": 0.95, "urgency": "medium", '
-            '"urgency_reason": "deadline is tomorrow", '
-            '"reasoning": "Direct request for apartment cleaning"}'
-        ),
-    },
-    {
-        "role": "user",
-        "content": "Ghar mein aag lag gayi hai, jaldi help bhejo!",
-    },
-    {
-        "role": "assistant",
-        "content": (
-            '{"detected_language": "Hindi", '
-            '"translated_text": "There is a fire in my house, send help quickly!", '
-            '"intent_category": "Emergency Services", "confidence": 0.99, "urgency": "high", '
-            '"urgency_reason": "active fire, explicit help request", '
-            '"reasoning": "Fire is a life/property threatening emergency"}'
-        ),
-    },
-]
-
 
 def build_messages(user_text: str) -> list[dict]:
     """Assemble the final message list: system prompt + few-shot + real query."""
