@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # EchoLang
 
 EchoLang is a small FastAPI app for handling service requests in mixed Hindi, Tamil, and English. It can take text or audio, transcribe speech, translate it, and classify the request by intent and urgency.
