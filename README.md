@@ -16,6 +16,12 @@ copy .env.example .env
 uvicorn main:app --reload
 ```
 
+Create a .env file with Groq API key:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
 Then open http://127.0.0.1:8000/docs.
 
 ## Main endpoints
