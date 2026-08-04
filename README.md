@@ -101,4 +101,3 @@ Then open http://127.0.0.1:8001.
 - schemas.py — request and response models
 - config.py — config and category list
 - frontend/ — static UI
->>>>>>> 61154f6341ee654bd05c573adaf8d1c775b8f99c
