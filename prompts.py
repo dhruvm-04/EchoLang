@@ -57,9 +57,9 @@ Urgency rules:
 
 Respond with ONLY the JSON object. Do not wrap it in code fences."""
 
+
 def build_messages(user_text: str) -> list[dict]:
-    """Assemble the final message list: system prompt + few-shot + real query."""
+    """Assemble the final message list: system prompt + real query."""
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    messages.extend(FEW_SHOT_EXAMPLES)
     messages.append({"role": "user", "content": user_text})
     return messages
