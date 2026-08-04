@@ -4,6 +4,7 @@ import os
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from groq import Groq
 
 from config import GROQ_API_KEY, STT_MODEL, LLM_MODEL, SERVICE_CATEGORIES
@@ -115,3 +116,7 @@ async def process(audio: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Could not transcribe audio")
     analysis = _analyze(transcript)
     return ProcessResult(transcript=transcript, analysis=analysis)
+
+
+# Serve the frontend from the same app for single-deploy hosting.
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
