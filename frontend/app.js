@@ -5,7 +5,10 @@
   const $$ = (sel) => document.querySelectorAll(sel);
 
   const STORAGE_API_KEY = "echolang-api-base";
-  let apiBase = localStorage.getItem(STORAGE_API_KEY) || "http://127.0.0.1:8000";
+  const defaultApiBase = window.location.origin && window.location.origin !== "null"
+    ? window.location.origin
+    : "http://127.0.0.1:8000";
+  let apiBase = localStorage.getItem(STORAGE_API_KEY) || defaultApiBase;
   $("#api-base").value = apiBase;
 
   // ---------- state ----------
