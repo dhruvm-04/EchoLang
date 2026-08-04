@@ -51,14 +51,17 @@ def _transcribe(file_bytes: bytes, filename: str) -> str:
 
 def _analyze(text: str) -> AnalyzeResult:
     """Run the prompt-engineered translation + intent + urgency pass."""
-    completion = client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=build_messages(text),
-        temperature=0.2,  # low temperature: we want consistent, deterministic-ish JSON
-        max_tokens=300,
-        response_format={"type": "json_object"},
-    )
-    raw = completion.choices[0].message.content
+    try:
+        completion = client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=build_messages(text),
+            temperature=0.2,  # low temperature: we want consistent, deterministic-ish JSON
+            max_tokens=300,
+            response_format={"type": "json_object"},
+        )
+        raw = completion.choices[0].message.content
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Groq analysis failed: {exc}") from exc
 
     try:
         data = json.loads(raw)
@@ -93,7 +96,10 @@ async def transcribe(audio: UploadFile = File(...)):
     audio_bytes = await audio.read()
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Empty audio file")
-    transcript = _transcribe(audio_bytes, audio.filename)
+    try:
+        transcript = _transcribe(audio_bytes, audio.filename)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Groq transcription failed: {exc}") from exc
     return TranscribeResult(transcript=transcript)
 
 
@@ -111,7 +117,10 @@ async def process(audio: UploadFile = File(...)):
     audio_bytes = await audio.read()
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Empty audio file")
-    transcript = _transcribe(audio_bytes, audio.filename)
+    try:
+        transcript = _transcribe(audio_bytes, audio.filename)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Groq transcription failed: {exc}") from exc
     if not transcript:
         raise HTTPException(status_code=422, detail="Could not transcribe audio")
     analysis = _analyze(transcript)
