@@ -185,7 +185,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
-    if (!res.ok) throw new Error(`Backend returned ${res.status}`);
+    if (!res.ok) throw new Error(await readBackendError(res));
     return res.json();
   }
 
@@ -193,8 +193,26 @@
     const form = new FormData();
     form.append("audio", blob, filename);
     const res = await fetch(`${apiBase}/process`, { method: "POST", body: form });
-    if (!res.ok) throw new Error(`Backend returned ${res.status}`);
+    if (!res.ok) throw new Error(await readBackendError(res));
     return res.json();
+  }
+
+  async function readBackendError(res) {
+    try {
+      const data = await res.json();
+      if (data && data.detail) return data.detail;
+    } catch (e) {
+      // fall through to text handling
+    }
+
+    try {
+      const text = await res.text();
+      if (text) return text;
+    } catch (e) {
+      // ignore and use status fallback
+    }
+
+    return `Backend returned ${res.status}`;
   }
 
   // ---------- render ----------
